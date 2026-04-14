@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Machine {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  code          String?     
+  name          String      @unique
+  description   String?
+  identifier    String?         @unique
+  functionality String?
+  imageUrl      String?
+  department    Department? @relation(fields: [departmentId], references: [id])
+  departmentId  String?     @db.ObjectId
+  stopLogs      StopLog[]
+  fmeas         Fmea[]
+  routines      Routine[]
+  actionPlans   ActionPlan[]
+  serviceOrders ServiceOrder[]
+  materialToMachine MaterialToMachine[]
+}
+
+model ServiceOrderResourceHistory {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  quantity      Int
+  serviceOrder  ServiceOrder @relation(fields: [serviceOrderId], references: [id])
+  serviceOrderId String      @db.ObjectId
+  resource      Resource    @relation(fields: [resourceId], references: [id])
+  resourceId    String      @db.ObjectId
+}
+
+model ServiceOrder {
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  machine       Machine     @relation(fields: [machineId], references: [id])
+  machineId     String      @db.ObjectId
+  reason        String
+  type          String
+  machineWasStoped Boolean
+  serviceDescription String
+  servicePerformed String?
+  createdAt     DateTime    @default(now())
+  serviceInitDate DateTime?
+  serviceEndDate DateTime?
+  serviceOrderEndDate DateTime?
+  resources     ServiceOrderResourceHistory[]
+  serviceOrderLink String?
+}
